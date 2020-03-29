@@ -10,8 +10,10 @@ public class Main {
 		try (Connection conn = DriverManager.getConnection("jdbc:sqlite:sample.db")) {
 			Statement stmt = conn.createStatement();
 			stmt.setQueryTimeout(30);
-			stmt.executeUpdate("drop table if exists person");
-			stmt.executeUpdate("create table person (id integer, name string)");
+			stmt.executeUpdate("drop table if exists request");
+			stmt.executeUpdate("drop table if exists response");
+			stmt.executeUpdate("create table request (id integer, url text, method text, headers text, body text)");
+			stmt.executeUpdate("create table response (id integer, reqid integer, status integer, headers text, content_type text, body text)");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

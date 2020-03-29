@@ -7,7 +7,7 @@ import java.sql.Statement;
 
 public class Main {
 	private static void initDb(String dbFilePath) {
-		try (Connection conn = DriverManager.getConnection("jdbc:sqlite:sample.db")) {
+		try (Connection conn = DriverManager.getConnection("jdbc:sqlite:"+dbFilePath)) {
 			Statement stmt = conn.createStatement();
 			stmt.setQueryTimeout(30);
 			stmt.executeUpdate("drop table if exists request");

@@ -1,5 +1,6 @@
 package rescheck;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -67,6 +68,11 @@ public class Main {
 			e.printStackTrace();
 		}
 	}
+	
+	// TODO: Implement this!
+	private static HttpUriRequestBase makeRequest(File requestFile) {
+		return null;
+	}
 
 	public static void main(String... args) {
 		if (args.length != 1) {
@@ -76,27 +82,15 @@ public class Main {
 		initDb(args[0]);
 
 		try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-			HttpGet httpGet = new HttpGet("http://httpbin.org/get");
-			if ( !insertRequest(args[0], httpGet) ) {
+			HttpUriRequestBase httpRequest = makeRequest(null);
+			if ( !insertRequest(args[0], httpRequest) ) {
 				System.err.println("failed at inserting request to db");
 			}
 
-			try (CloseableHttpResponse response1 = httpclient.execute(httpGet)) {
+			try (CloseableHttpResponse response1 = httpclient.execute(httpRequest)) {
 				System.out.println(response1.getCode() + " " + response1.getReasonPhrase());
 				HttpEntity entity1 = response1.getEntity();
 				EntityUtils.consume(entity1);
-			}
-
-			HttpPost httpPost = new HttpPost("http://httpbin.org/post");
-			List<NameValuePair> nvps = new ArrayList<>();
-			nvps.add(new BasicNameValuePair("username", "vip"));
-			nvps.add(new BasicNameValuePair("password", "secret"));
-			httpPost.setEntity(new UrlEncodedFormEntity(nvps));
-
-			try (CloseableHttpResponse response2 = httpclient.execute(httpPost)) {
-				System.out.println(response2.getCode() + " " + response2.getReasonPhrase());
-				HttpEntity entity2 = response2.getEntity();
-				EntityUtils.consume(entity2);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -105,7 +105,7 @@ public class Main {
 		try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
 			HttpUriRequestBase httpRequest = makeRequest(null);
 			String reqid = insertRequest(args[0], httpRequest);
-			if ( reqid != null ) {
+			if ( reqid == null ) {
 				System.err.println("failed at inserting request to db");
 			}
 

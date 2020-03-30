@@ -9,7 +9,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -18,8 +20,10 @@ import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
 
@@ -38,15 +42,40 @@ public class Main {
 		}
 	}
 
-	private static boolean insertRequest(String dbFilePath, HttpUriRequestBase request) {
+	// TODO: Implement this
+	private static String insertRequest(String dbFilePath, HttpUriRequestBase request) {
 		try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbFilePath)) {
 			PreparedStatement stmt = conn.prepareStatement("insert into request values (?,?,?,?,?);");
 			stmt.setQueryTimeout(30);
-			stmt.setString(1, "id-0000");
 			stmt.setString(2, "http://localhost/");
 			stmt.setString(3, "get");
 			stmt.setString(4, "");
 			stmt.setString(5, "");
+			
+			// TODO: set request id
+			stmt.setString(1, "id-0000");
+			if ( stmt.execute() ) {
+				return "reqid";
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private static boolean insertResponse(String dbFilePath, String reqid, CloseableHttpResponse response, String body) {
+		try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbFilePath)) {
+			PreparedStatement stmt = conn.prepareStatement("insert into response values (?,?,?,?,?);");
+			stmt.setQueryTimeout(30);
+			
+			stmt.setString(2, reqid);
+			stmt.setInt(3, response.getCode());
+			stmt.setString(4, Arrays.stream(response.getHeaders()).map(Header::toString).collect(Collectors.joining("\n")));
+			stmt.setString(5, body);
+			
+			// TODO: set response id
+			stmt.setString(1, "id-0000");
+			
 			return stmt.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -83,14 +112,16 @@ public class Main {
 
 		try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
 			HttpUriRequestBase httpRequest = makeRequest(null);
-			if ( !insertRequest(args[0], httpRequest) ) {
+			String reqid = insertRequest(args[0], httpRequest);
+			if ( reqid != null ) {
 				System.err.println("failed at inserting request to db");
 			}
 
-			try (CloseableHttpResponse response1 = httpclient.execute(httpRequest)) {
-				System.out.println(response1.getCode() + " " + response1.getReasonPhrase());
-				HttpEntity entity1 = response1.getEntity();
-				EntityUtils.consume(entity1);
+			try (CloseableHttpResponse response = httpclient.execute(httpRequest)) {
+				String body = EntityUtils.toString(response.getEntity());
+				insertResponse(args[0], reqid, response, body);
+			} catch (ParseException e) {
+				System.err.println("failed at inserting response to db");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

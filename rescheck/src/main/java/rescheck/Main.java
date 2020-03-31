@@ -61,7 +61,7 @@ public class Main {
 	
 	private static boolean insertResponse(String dbFilePath, String reqid, CloseableHttpResponse response, String body) {
 		try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbFilePath)) {
-			PreparedStatement stmt = conn.prepareStatement("insert into response values (?,?,?,?,?);");
+			PreparedStatement stmt = conn.prepareStatement("insert into response values (?,?,?,?,?,?);");
 			stmt.setQueryTimeout(30);
 			
 			stmt.setString(2, reqid);

@@ -1,14 +1,46 @@
 package rescheck;
 
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.stream.Collectors;
+
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.ProtocolException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 public class ResponseDo extends BaseDo {
 	private String requestId;
 	private Integer status;
 	private String contentType;
-	
+
+	public ResponseDo(String requestId, ClassicHttpResponse response) {
+		setRequestId(requestId);
+		setStatus(response.getCode());
+
+		for ( Header h : response.getHeaders() ) {
+			addHeader(h.getName() + ": " + h.getValue());
+		}
+		
+		try {
+			Header h = response.getHeader("content-type");
+			setContentType(h.getValue());
+		} catch (ProtocolException e) {
+			setContentType(null);
+		}
+
+		HttpEntity entity = response.getEntity();
+		try {
+			String body = EntityUtils.toString(entity);
+			setBody(body);
+		} catch (ParseException e) {
+		} catch (IOException e) {
+		}
+	}
+
 	@Override
 	public PreparedStatement setParameter(PreparedStatement preparedStatement) throws SQLException {
 		preparedStatement.setString(1, getHash());
@@ -18,23 +50,28 @@ public class ResponseDo extends BaseDo {
 		preparedStatement.setString(5, contentType);
 		preparedStatement.setString(6, body);
 		return preparedStatement;
-	}	
-	
+	}
+
 	public String getRequestId() {
 		return requestId;
 	}
+
 	public void setRequestId(String requestId) {
 		this.requestId = requestId;
 	}
+
 	public Integer getStatus() {
 		return status;
 	}
+
 	public void setStatus(Integer status) {
 		this.status = status;
 	}
+
 	public String getContentType() {
 		return contentType;
 	}
+
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
 	}

@@ -2,6 +2,7 @@ package rescheck;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -16,8 +17,10 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.sqlite.util.StringUtils;
 
 public class Main {
 	private static void initDb(String dbFilePath) {
@@ -35,15 +38,16 @@ public class Main {
 	}
 
 	// TODO: Implement this
-	private static String insertRequest(String dbFilePath, HttpUriRequestBase request) {
+	private static String insertRequest(String dbFilePath, HttpUriRequestBase request, String body) throws URISyntaxException {
 		try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbFilePath)) {
 			PreparedStatement stmt = conn.prepareStatement("insert into request values (?,?,?,?,?);");
 			stmt.setQueryTimeout(30);
-			stmt.setString(2, "http://localhost/");
-			stmt.setString(3, "get");
-			stmt.setString(4, "");
-			stmt.setString(5, "");
 			
+			stmt.setString(2, request.getUri().toString());
+			stmt.setString(3, request.getMethod());
+			stmt.setString(4, Arrays.stream(request.getHeaders()).map(Header::toString).collect(Collectors.joining("\n")));
+			stmt.setString(5, body == null ? "" : body);
+
 			// TODO: set request id
 			stmt.setString(1, "id-0000");
 			if ( stmt.execute() ) {
@@ -104,7 +108,14 @@ public class Main {
 
 		try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
 			HttpUriRequestBase httpRequest = makeRequest(null);
-			String reqid = insertRequest(args[0], httpRequest);
+			// TODO set body for some requests
+			final String requestBody = "";
+			String reqid = null;
+			try {
+				reqid = insertRequest(args[0], httpRequest, requestBody);
+			} catch ( URISyntaxException e ) {
+				System.err.println("url error: " + e.getMessage());
+			}
 			if ( reqid == null ) {
 				System.err.println("failed at inserting request to db");
 			}

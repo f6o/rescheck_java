@@ -9,7 +9,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
@@ -36,7 +38,7 @@ public class Main {
 			e.printStackTrace();
 		}
 	}
-
+	
 	// TODO: Implement this
 	private static String insertRequest(String dbFilePath, HttpUriRequestBase request, String body) throws URISyntaxException {
 		try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbFilePath)) {
@@ -94,37 +96,21 @@ public class Main {
 		}
 	}
 	
-	// TODO: Implement this!
-	private static HttpUriRequestBase makeRequest(File requestFile) {
-		return null;
-	}
-
 	public static void main(String... args) {
 		if (args.length != 1) {
 			System.err.println("no db file specied.");
 			System.exit(1);
 		}
 		initDb(args[0]);
+		
+		List<RequestDo> requests = new ArrayList<>();
+		List<ResponseDo> responses = new ArrayList<>();
 
-		try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-			HttpUriRequestBase httpRequest = makeRequest(null);
-			// TODO set body for some requests
-			final String requestBody = "";
-			String reqid = null;
-			try {
-				reqid = insertRequest(args[0], httpRequest, requestBody);
-			} catch ( URISyntaxException e ) {
-				System.err.println("url error: " + e.getMessage());
-			}
-			if ( reqid == null ) {
-				System.err.println("failed at inserting request to db");
-			}
-
-			try (CloseableHttpResponse response = httpclient.execute(httpRequest)) {
-				String body = EntityUtils.toString(response.getEntity());
-				insertResponse(args[0], reqid, response, body);
-			} catch (ParseException e) {
-				System.err.println("failed at inserting response to db");
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			for ( RequestDo request : requests ) {
+				request.save();
+				ResponseDo response = request.sendWith(httpClient);
+				response.save();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

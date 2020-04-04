@@ -7,11 +7,12 @@ import java.util.stream.Collectors;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.ProtocolException;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
-public class RequestDo extends BaseDo {
+public class RequestDo extends BaseDo implements DBStorable {
 	private String url;
 	private String method;
 
@@ -61,6 +62,17 @@ public class RequestDo extends BaseDo {
 	@Override
 	protected void setHash() {
 		this.hash = calcHash(url, method, headers, body);
+	}
+
+	// TODO: Implement this
+	public ResponseDo sendWith(CloseableHttpClient httpClient) {
+		return null;
+	}
+
+	@Override
+	public boolean save() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

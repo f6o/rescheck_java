@@ -12,7 +12,7 @@ import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.ProtocolException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 
-public class ResponseDo extends BaseDo {
+public class ResponseDo extends BaseDo implements DBStorable {
 	private String requestId;
 	private Integer status;
 	private String contentType;
@@ -79,5 +79,11 @@ public class ResponseDo extends BaseDo {
 	@Override
 	protected void setHash() {
 		this.hash = calcHash(requestId, status, headers, contentType, body);
+	}
+
+	@Override
+	public boolean save() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

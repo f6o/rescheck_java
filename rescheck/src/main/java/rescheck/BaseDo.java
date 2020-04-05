@@ -1,7 +1,5 @@
 package rescheck;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,8 +25,6 @@ public abstract class BaseDo {
 		String baseStr = Arrays.stream(objects).map(Object::toString).collect(Collectors.joining(";"));
 		return DigestUtils.sha1Hex(baseStr);
 	}
-	
-	abstract PreparedStatement setParameter(PreparedStatement preparedStatement) throws SQLException;
 	
 	public String getId() {
 		return id;

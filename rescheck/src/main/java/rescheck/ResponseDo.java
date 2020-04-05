@@ -1,6 +1,7 @@
 package rescheck;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.stream.Collectors;
@@ -41,17 +42,6 @@ public class ResponseDo extends BaseDo implements DBStorable {
 		}
 	}
 
-	@Override
-	public PreparedStatement setParameter(PreparedStatement preparedStatement) throws SQLException {
-		preparedStatement.setString(1, getHash());
-		preparedStatement.setString(2, requestId);
-		preparedStatement.setInt(3, status);
-		preparedStatement.setString(4, headers.stream().collect(Collectors.joining("\n")));
-		preparedStatement.setString(5, contentType);
-		preparedStatement.setString(6, body);
-		return preparedStatement;
-	}
-
 	public String getRequestId() {
 		return requestId;
 	}
@@ -80,10 +70,27 @@ public class ResponseDo extends BaseDo implements DBStorable {
 	protected void setHash() {
 		this.hash = calcHash(requestId, status, headers, contentType, body);
 	}
+	
+	@Override
+	public PreparedStatement setParameter(PreparedStatement preparedStatement) throws SQLException {
+		preparedStatement.setString(1, getHash());
+		preparedStatement.setString(2, requestId);
+		preparedStatement.setInt(3, status);
+		preparedStatement.setString(4, headers.stream().collect(Collectors.joining("\n")));
+		preparedStatement.setString(5, contentType);
+		preparedStatement.setString(6, body);
+		return preparedStatement;
+	}
 
 	@Override
-	public boolean save() {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean save(Connection conn) {
+		try {
+			PreparedStatement stmt = conn.prepareStatement("insert into response values (?,?,?,?,?,?);");
+			stmt.setQueryTimeout(30);
+			setParameter(stmt);
+			return stmt.execute();
+		} catch ( SQLException e ) {
+			return false;
+		}
 	}
 }

@@ -1,5 +1,6 @@
 package rescheck;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.stream.Collectors;
@@ -36,16 +37,6 @@ public class RequestDo extends BaseDo implements DBStorable {
 		return request;
 	}
 
-	@Override
-	public PreparedStatement setParameter(PreparedStatement preparedStatement) throws SQLException {
-		preparedStatement.setString(1, getHash());
-		preparedStatement.setString(2, url);
-		preparedStatement.setString(3, method);
-		preparedStatement.setString(4, headers.stream().collect(Collectors.joining("\n")));
-		preparedStatement.setString(5, body == null ? "" : body);
-		return preparedStatement;
-	}
-
 	public String getUrl() {
 		return url;
 	}
@@ -68,11 +59,27 @@ public class RequestDo extends BaseDo implements DBStorable {
 	public ResponseDo sendWith(CloseableHttpClient httpClient) {
 		return null;
 	}
+	
+	@Override
+	public PreparedStatement setParameter(PreparedStatement preparedStatement) throws SQLException {
+		preparedStatement.setString(1, getHash());
+		preparedStatement.setString(2, url);
+		preparedStatement.setString(3, method);
+		preparedStatement.setString(4, headers.stream().collect(Collectors.joining("\n")));
+		preparedStatement.setString(5, body == null ? "" : body);
+		return preparedStatement;
+	}
 
 	@Override
-	public boolean save() {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean save(Connection conn) {
+		try {
+			PreparedStatement stmt = conn.prepareStatement("insert into request values (?,?,?,?,?);");
+			stmt.setQueryTimeout(30);
+			setParameter(stmt);
+			return stmt.execute();
+		} catch ( SQLException e ) {
+			return false;
+		}
 	}
 
 }

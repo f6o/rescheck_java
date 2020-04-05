@@ -1,28 +1,16 @@
 package rescheck;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.ParseException;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.sqlite.util.StringUtils;
 
 public class Main {
 	private static void initDb(String dbFilePath) {
@@ -37,48 +25,6 @@ public class Main {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	// TODO: Implement this
-	private static String insertRequest(String dbFilePath, HttpUriRequestBase request, String body) throws URISyntaxException {
-		try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbFilePath)) {
-			PreparedStatement stmt = conn.prepareStatement("insert into request values (?,?,?,?,?);");
-			stmt.setQueryTimeout(30);
-			
-			stmt.setString(2, request.getUri().toString());
-			stmt.setString(3, request.getMethod());
-			stmt.setString(4, Arrays.stream(request.getHeaders()).map(Header::toString).collect(Collectors.joining("\n")));
-			stmt.setString(5, body == null ? "" : body);
-
-			// TODO: set request id
-			stmt.setString(1, "id-0000");
-			if ( stmt.execute() ) {
-				return "reqid";
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-	
-	private static boolean insertResponse(String dbFilePath, String reqid, CloseableHttpResponse response, String body) {
-		try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbFilePath)) {
-			PreparedStatement stmt = conn.prepareStatement("insert into response values (?,?,?,?,?,?);");
-			stmt.setQueryTimeout(30);
-			
-			stmt.setString(2, reqid);
-			stmt.setInt(3, response.getCode());
-			stmt.setString(4, Arrays.stream(response.getHeaders()).map(Header::toString).collect(Collectors.joining("\n")));
-			stmt.setString(5, body);
-			
-			// TODO: set response id
-			stmt.setString(1, "id-0000");
-			
-			return stmt.execute();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return false;
 	}
 
 	private static void printAllRequests(String dbFilePath) {
@@ -105,17 +51,21 @@ public class Main {
 		
 		List<RequestDo> requests = new ArrayList<>();
 		List<ResponseDo> responses = new ArrayList<>();
-
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-			for ( RequestDo request : requests ) {
-				request.save();
-				ResponseDo response = request.sendWith(httpClient);
-				response.save();
+		try ( Connection conn = DriverManager.getConnection("jdbc:sqlite:" + args[0])) {
+			try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+				for (RequestDo request : requests) {
+					request.save(conn);
+					ResponseDo response = request.sendWith(httpClient);
+					response.save(conn);
+					responses.add(response);
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				printAllRequests(args[0]);
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			printAllRequests(args[0]);
+		} catch (SQLException e1) {
+			e1.printStackTrace();
 		}
 
 		System.exit(0);

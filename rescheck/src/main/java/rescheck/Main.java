@@ -13,8 +13,8 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 
 public class Main {
-	private static void initDb(String dbFilePath) {
-		try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbFilePath)) {
+	private static void initDb(Connection conn) {
+		try {
 			Statement stmt = conn.createStatement();
 			stmt.setQueryTimeout(30);
 			stmt.executeUpdate("drop table if exists request");
@@ -27,9 +27,9 @@ public class Main {
 		}
 	}
 
-	private static void printAllRequests(String dbFilePath) {
+	private static void printAllRequests(Connection conn) {
 		System.out.println("print requests");
-		try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbFilePath)) {
+		try {
 			Statement stmt = conn.createStatement();
 			stmt.setQueryTimeout(30);
 			ResultSet rs = stmt.executeQuery("select * from request");
@@ -47,11 +47,11 @@ public class Main {
 			System.err.println("no db file specied.");
 			System.exit(1);
 		}
-		initDb(args[0]);
 		
 		List<RequestDo> requests = new ArrayList<>();
 		List<ResponseDo> responses = new ArrayList<>();
 		try ( Connection conn = DriverManager.getConnection("jdbc:sqlite:" + args[0])) {
+			initDb(conn);
 			try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 				for (RequestDo request : requests) {
 					request.save(conn);
@@ -62,7 +62,7 @@ public class Main {
 			} catch (IOException e) {
 				e.printStackTrace();
 			} finally {
-				printAllRequests(args[0]);
+				printAllRequests(conn);
 			}
 		} catch (SQLException e1) {
 			e1.printStackTrace();

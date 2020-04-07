@@ -48,10 +48,6 @@ public class ResponseDo extends BaseDo implements DBStorable {
 		this.exceptionWhileRequesting = e;
 	}
 
-	public ResponseDo(CloseableHttpResponse resp) {
-		// TODO Auto-generated constructor stub
-	}
-
 	public String getRequestId() {
 		return requestId;
 	}

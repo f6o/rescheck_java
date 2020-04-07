@@ -61,7 +61,7 @@ public class RequestDo extends BaseDo implements DBStorable {
 	public ResponseDo sendWith(CloseableHttpClient httpClient) {
 		try {
 			CloseableHttpResponse resp = httpClient.execute(this.toHttpRequest());
-			return new ResponseDo(resp);
+			return new ResponseDo(this.getHash(), resp);
 		} catch (Exception e) {
 			return new ResponseDo(e);
 		}

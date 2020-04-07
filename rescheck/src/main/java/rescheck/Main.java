@@ -43,14 +43,15 @@ public class Main {
 	}
 	
 	public static void main(String... args) {
-		if (args.length != 1) {
-			System.err.println("no db file specied.");
+		if (args.length != 2) {
+			System.err.println("usage: java -jar tool.jar <db_file> <request_file>");
 			System.exit(1);
 		}
 		
-		List<RequestDo> requests = new ArrayList<>();
+		final String dbUrl = "jdbc:sqlite:" + args[0];
+		List<RequestDo> requests = RequestDo.createFrom(args[1]);
 		List<ResponseDo> responses = new ArrayList<>();
-		try ( Connection conn = DriverManager.getConnection("jdbc:sqlite:" + args[0])) {
+		try ( Connection conn = DriverManager.getConnection(dbUrl)) {
 			initDb(conn);
 			try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 				for (RequestDo request : requests) {

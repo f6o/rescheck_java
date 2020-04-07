@@ -3,6 +3,7 @@ package rescheck;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -80,6 +81,11 @@ public class RequestDo extends BaseDo implements DBStorable {
 		} catch ( SQLException e ) {
 			return false;
 		}
+	}
+	
+	// TODO: implement this
+	public static final List<RequestDo> createFrom(String filePath) {
+		return null;
 	}
 
 }

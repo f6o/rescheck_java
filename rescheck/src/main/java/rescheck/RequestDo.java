@@ -1,5 +1,6 @@
 package rescheck;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -10,6 +11,7 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.ProtocolException;
 import org.apache.hc.core5.http.io.entity.StringEntity;
@@ -56,9 +58,13 @@ public class RequestDo extends BaseDo implements DBStorable {
 		this.hash = calcHash(url, method, headers, body);
 	}
 
-	// TODO: Implement this
 	public ResponseDo sendWith(CloseableHttpClient httpClient) {
-		return null;
+		try {
+			CloseableHttpResponse resp = httpClient.execute(this.toHttpRequest());
+			return new ResponseDo(resp);
+		} catch (Exception e) {
+			return new ResponseDo(e);
+		}
 	}
 	
 	@Override

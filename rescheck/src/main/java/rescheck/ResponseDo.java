@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.stream.Collectors;
 
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpEntity;
@@ -17,6 +18,7 @@ public class ResponseDo extends BaseDo implements DBStorable {
 	private String requestId;
 	private Integer status;
 	private String contentType;
+	private Exception exceptionWhileRequesting;
 
 	public ResponseDo(String requestId, ClassicHttpResponse response) {
 		setRequestId(requestId);
@@ -42,6 +44,14 @@ public class ResponseDo extends BaseDo implements DBStorable {
 		}
 	}
 
+	public ResponseDo(Exception e) {
+		this.exceptionWhileRequesting = e;
+	}
+
+	public ResponseDo(CloseableHttpResponse resp) {
+		// TODO Auto-generated constructor stub
+	}
+
 	public String getRequestId() {
 		return requestId;
 	}
@@ -64,6 +74,10 @@ public class ResponseDo extends BaseDo implements DBStorable {
 
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
+	}
+	
+	public Exception getExceptionWhileRequesting() {
+		return exceptionWhileRequesting;
 	}
 
 	@Override

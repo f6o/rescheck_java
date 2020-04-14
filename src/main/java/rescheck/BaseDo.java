@@ -14,7 +14,7 @@ public abstract class BaseDo {
 	
 	protected String hash;
 	public String getHash() {
-		if ( hash != null ) {
+		if ( hash == null ) {
 			setHash();
 		}
 		return hash;

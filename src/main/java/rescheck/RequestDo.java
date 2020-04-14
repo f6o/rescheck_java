@@ -111,8 +111,7 @@ public class RequestDo extends BaseDo implements DBStorable {
 		}
 	}
 	
-	private static Pattern DELIMITER = Pattern.compile("^---+(\\n)?", Pattern.MULTILINE);
-	private static String LINE_DELIMITER = "\\n";
+	private final static String CRLF= "\r\n";
 
 	/***
 	 * 
@@ -123,19 +122,21 @@ public class RequestDo extends BaseDo implements DBStorable {
 		System.err.println("<parse>" + text);
 		RequestDo request = new RequestDo();
 		try ( final Scanner scanner = new Scanner(text)  ) {
-			scanner.useDelimiter(LINE_DELIMITER);
+			scanner.useDelimiter(CRLF);
 			System.err.println("parse request: delim=" + scanner.delimiter());
 			
 			if ( !scanner.hasNextLine() ) {
 				request.setParseError("first line not found");
 			}
-			
-			boolean hasBody = false;
-			
+
 			// GET http://localhost/index.html
-			String[] firstLine = scanner.nextLine().split("\\s+");
+			String line = scanner.nextLine();
+			System.err.println(line);
+			String[] firstLine = line.split("\\s+");
 			request.setMethod(firstLine[0]);
 			request.setUrl(firstLine[1]);
+			
+			boolean hasBody = false;
 
 			// x-sample-header: value1
 			while ( scanner.hasNextLine() ) {
@@ -151,9 +152,12 @@ public class RequestDo extends BaseDo implements DBStorable {
 			// rest, if any, is for body
 			if ( hasBody ) {
 				StringBuilder sb = new StringBuilder();
-				while ( scanner.hasNextLine() ) {
+				if ( scanner.hasNextLine() ) {
 					sb.append(scanner.nextLine());
-					sb.append(LINE_DELIMITER);
+				}
+				while ( scanner.hasNextLine() ) {
+					sb.append(CRLF);
+					sb.append(scanner.nextLine());
 				}
 				request.setBody(sb.toString());
 			}
@@ -162,10 +166,12 @@ public class RequestDo extends BaseDo implements DBStorable {
 		return request;
 	}
 
+	private final static Pattern REQUEST_CHUNK_DELIMITER = Pattern.compile("^---+\r\n", Pattern.MULTILINE);
+	
 	public static final List<RequestDo> createFrom(String filePath) {
 		List<RequestDo> requests = new ArrayList<>();
 		try ( final Scanner scanner = new Scanner(new File(filePath)) ) {
-			scanner.useDelimiter(DELIMITER);
+			scanner.useDelimiter(REQUEST_CHUNK_DELIMITER);
 			while ( scanner.hasNext() ) {
 				final String text = scanner.next();
 				final RequestDo rdo = RequestDo.parseRequest(text);

@@ -23,6 +23,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 public class RequestDo extends BaseDo implements DBStorable {
 	private String url;
 	private String method;
+	private String parseErrorMessage;
 
 	HttpUriRequestBase toHttpRequest() throws ProtocolException {
 		HttpUriRequestBase request;
@@ -55,6 +56,14 @@ public class RequestDo extends BaseDo implements DBStorable {
 	}
 	public void setMethod(String method) {
 		this.method = method;
+	}
+	
+	public boolean parsed() {
+		return this.parseErrorMessage != null;
+	}
+	
+	private void setParseError(String msg) {
+		this.parseErrorMessage = msg;
 	}
 
 	@Override
@@ -95,12 +104,39 @@ public class RequestDo extends BaseDo implements DBStorable {
 	
 	private static Pattern DELIMITER = Pattern.compile("^---+(\\r?\\n)?", Pattern.MULTILINE); 
 
-	// TODO: implement this
 	public static final RequestDo parseRequest(String text) {
 		System.err.println("<parse>" + text);
-		return new RequestDo();
+		RequestDo request = new RequestDo();
+		try ( final Scanner scanner = new Scanner(text)  ) {
+			if ( !scanner.hasNextLine() ) {
+				request.setParseError("first line not found");
+			}
+			// GET http://localhost/index.html
+			String[] firstLine = scanner.nextLine().split("\\s+");
+			request.setMethod(firstLine[0]);
+			request.setUrl(firstLine[1]);
+
+			// x-sample-header: value1
+			while ( scanner.hasNextLine() ) {
+				final String headerLine = scanner.nextLine();
+				if ( headerLine.isEmpty() ) {
+					break;
+				} else {
+					request.addHeader(headerLine);
+				}
+			}
+			
+			// rest, if any, is for body
+			StringBuilder sb = new StringBuilder();
+			while ( scanner.hasNextLine() ) {
+				sb.append(scanner.nextLine());
+			}
+			request.setBody(sb.toString());
+		}
+		
+		return request;
 	}
-	
+
 	public static final List<RequestDo> createFrom(String filePath) {
 		List<RequestDo> requests = new ArrayList<>();
 		try ( final Scanner scanner = new Scanner(new File(filePath)) ) {
@@ -112,7 +148,7 @@ public class RequestDo extends BaseDo implements DBStorable {
 			}
 		} catch (FileNotFoundException e) {
 			return null;
-		}
+		} 
 		return requests;
 	}
 

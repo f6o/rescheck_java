@@ -68,7 +68,16 @@ public class RequestDo extends BaseDo implements DBStorable {
 
 	@Override
 	protected void setHash() {
-		this.hash = calcHash(url, method, headers, body);
+		if ( body == null )
+			this.hash = calcHash(url, method, headers);
+		else
+			this.hash = calcHash(url, method, headers, body);
+	}
+	
+	@Override
+	public String toString() {
+		final String bodyInfo = this.getBody() == null ? "" : " len="+this.getBody().length(); 
+		return String.format("[id=%s %s %s%s]", this.getHash(), this.getMethod(), this.getUrl(), bodyInfo);
 	}
 
 	public ResponseDo sendWith(CloseableHttpClient httpClient) {
@@ -102,15 +111,27 @@ public class RequestDo extends BaseDo implements DBStorable {
 		}
 	}
 	
-	private static Pattern DELIMITER = Pattern.compile("^---+(\\r?\\n)?", Pattern.MULTILINE); 
+	private static Pattern DELIMITER = Pattern.compile("^---+(\\n)?", Pattern.MULTILINE);
+	private static String LINE_DELIMITER = "\\n";
 
+	/***
+	 * 
+	 * @param text LF \n assumed
+	 * @return
+	 */
 	public static final RequestDo parseRequest(String text) {
 		System.err.println("<parse>" + text);
 		RequestDo request = new RequestDo();
 		try ( final Scanner scanner = new Scanner(text)  ) {
+			scanner.useDelimiter(LINE_DELIMITER);
+			System.err.println("parse request: delim=" + scanner.delimiter());
+			
 			if ( !scanner.hasNextLine() ) {
 				request.setParseError("first line not found");
 			}
+			
+			boolean hasBody = false;
+			
 			// GET http://localhost/index.html
 			String[] firstLine = scanner.nextLine().split("\\s+");
 			request.setMethod(firstLine[0]);
@@ -120,6 +141,7 @@ public class RequestDo extends BaseDo implements DBStorable {
 			while ( scanner.hasNextLine() ) {
 				final String headerLine = scanner.nextLine();
 				if ( headerLine.isEmpty() ) {
+					hasBody = true;
 					break;
 				} else {
 					request.addHeader(headerLine);
@@ -127,13 +149,16 @@ public class RequestDo extends BaseDo implements DBStorable {
 			}
 			
 			// rest, if any, is for body
-			StringBuilder sb = new StringBuilder();
-			while ( scanner.hasNextLine() ) {
-				sb.append(scanner.nextLine());
+			if ( hasBody ) {
+				StringBuilder sb = new StringBuilder();
+				while ( scanner.hasNextLine() ) {
+					sb.append(scanner.nextLine());
+					sb.append(LINE_DELIMITER);
+				}
+				request.setBody(sb.toString());
 			}
-			request.setBody(sb.toString());
 		}
-		
+		System.err.println("req: " + request);
 		return request;
 	}
 

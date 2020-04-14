@@ -1,9 +1,14 @@
 package rescheck;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -88,9 +93,27 @@ public class RequestDo extends BaseDo implements DBStorable {
 		}
 	}
 	
+	private static Pattern DELIMITER = Pattern.compile("^---+(\\r?\\n)?", Pattern.MULTILINE); 
+
 	// TODO: implement this
+	public static final RequestDo parseRequest(String text) {
+		System.err.println("<parse>" + text);
+		return new RequestDo();
+	}
+	
 	public static final List<RequestDo> createFrom(String filePath) {
-		return null;
+		List<RequestDo> requests = new ArrayList<>();
+		try ( final Scanner scanner = new Scanner(new File(filePath)) ) {
+			scanner.useDelimiter(DELIMITER);
+			while ( scanner.hasNext() ) {
+				final String text = scanner.next();
+				final RequestDo rdo = RequestDo.parseRequest(text);
+				requests.add(rdo);
+			}
+		} catch (FileNotFoundException e) {
+			return null;
+		}
+		return requests;
 	}
 
 }

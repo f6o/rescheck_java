@@ -33,7 +33,16 @@ this is a request body
 ha ha ha
 ```
 
+## build automation
+
+using GitHub Actions
+
+* .github/workflows/gradle.yaml
+* https://github.com/actions/download-artifact
+* https://github.com/marketplace/actions/gradle-command
+
 ## todo
 
 * sending requests using request entries in db file
-* github actions for building and testing. see https://github.com/marketplace/actions/gradle-command
+* build fat jar
+* github actions for testing

@@ -1,4 +1,4 @@
-package rescheck;
+package io.github.f6o.rescheck;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

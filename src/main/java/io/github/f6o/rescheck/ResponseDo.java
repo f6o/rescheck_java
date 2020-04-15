@@ -1,4 +1,4 @@
-package rescheck;
+package io.github.f6o.rescheck;
 
 import java.io.IOException;
 import java.sql.Connection;

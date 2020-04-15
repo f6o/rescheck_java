@@ -36,7 +36,7 @@ public class ResponseDo extends BaseDo implements DBStorable {
 
 		HttpEntity entity = response.getEntity();
 		try {
-			String body = EntityUtils.toString(entity);
+			String body = EntityUtils.toString(entity, "utf-8");
 			setBody(body);
 		} catch (ParseException e) {
 		} catch (IOException e) {

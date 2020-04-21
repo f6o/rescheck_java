@@ -43,10 +43,12 @@ using GitHub Actions
 
 ## todo
 
-* sending requests using request entries in db file
+* gui mode (send request and view result)
+* send requests using request entries in db file
 * http(s) proxy options
-* using threads for http request
+* use threads for http request
 * assert request header or body
 * diff response
 * build fat jar
-* github actions for testing
+* write unit test
+* use github actions for testing

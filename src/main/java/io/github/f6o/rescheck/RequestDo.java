@@ -19,8 +19,12 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.ProtocolException;
 import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RequestDo extends BaseDo implements DBStorable {
+	private static Logger logger = LoggerFactory.getLogger(RequestDo.class);
+	
 	private String url;
 	private String method;
 	private String parseErrorMessage;
@@ -119,11 +123,11 @@ public class RequestDo extends BaseDo implements DBStorable {
 	 * @return
 	 */
 	public static final RequestDo parseRequest(String text) {
-		System.err.println("<parse>" + text);
+		logger.debug("<parse>" + text);
 		RequestDo request = new RequestDo();
 		try ( final Scanner scanner = new Scanner(text)  ) {
 			scanner.useDelimiter(CRLF);
-			System.err.println("parse request: delim=" + scanner.delimiter());
+			logger.debug("parse request: delim=" + scanner.delimiter());
 			
 			if ( !scanner.hasNextLine() ) {
 				request.setParseError("first line not found");
@@ -131,7 +135,7 @@ public class RequestDo extends BaseDo implements DBStorable {
 
 			// GET http://localhost/index.html
 			String line = scanner.nextLine();
-			System.err.println(line);
+			logger.debug(line);
 			String[] firstLine = line.split("\\s+");
 			request.setMethod(firstLine[0]);
 			request.setUrl(firstLine[1]);
@@ -162,7 +166,7 @@ public class RequestDo extends BaseDo implements DBStorable {
 				request.setBody(sb.toString());
 			}
 		}
-		System.err.println("req: " + request);
+		logger.debug("req: " + request);
 		return request;
 	}
 

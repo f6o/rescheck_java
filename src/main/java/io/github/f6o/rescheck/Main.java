@@ -42,16 +42,11 @@ public class Main {
 		}
 	}
 	
-	public static void main(String... args) {
-		if (args.length != 2) {
-			System.err.println("usage: java -jar tool.jar <db_file> <request_file>");
-			System.exit(1);
-		}
-		
-		final String dbUrl = "jdbc:sqlite:" + args[0];
-		List<RequestDo> requests = RequestDo.createFrom(args[1]);
+	private static void request(String dbFile, String requestFile) {
+		final String dbUrl = "jdbc:sqlite:" + dbFile;
+		List<RequestDo> requests = RequestDo.createFrom(requestFile);
 		if ( requests == null ) {
-			System.err.println("file not found: " + args[1]);
+			System.err.println("file not found: " + requestFile);
 			System.exit(2);
 		}
 		
@@ -75,5 +70,14 @@ public class Main {
 		}
 
 		System.exit(0);
+	}
+	
+	public static void main(String... args) {
+		if (args.length != 2) {
+			System.err.println("usage: java -jar tool.jar <db_file> <request_file>");
+			System.exit(1);
+		}
+		
+		request(args[0], args[1]);
 	}
 }

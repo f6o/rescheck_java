@@ -50,6 +50,11 @@ public class Main {
 		
 		final String dbUrl = "jdbc:sqlite:" + args[0];
 		List<RequestDo> requests = RequestDo.createFrom(args[1]);
+		if ( requests == null ) {
+			System.err.println("file not found: " + args[1]);
+			System.exit(2);
+		}
+		
 		List<ResponseDo> responses = new ArrayList<>();
 		try ( Connection conn = DriverManager.getConnection(dbUrl)) {
 			initDb(conn);

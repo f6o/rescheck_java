@@ -4,7 +4,7 @@ Assistant tool for http request testing
 
 ## usage
 
-do request and save requests and response to database file (sqlite)
+do request and save requests and responses to database(sqlite) file
 
 ```
 java -jar rescheck.jar temp.db request.txt

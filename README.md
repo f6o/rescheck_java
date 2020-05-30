@@ -10,10 +10,10 @@ do request and save requests and response to database file (sqlite)
 java -jar rescheck.jar temp.db request.txt
 ```
 
-prints contents of database file
+prints contents of database file (print mode)
 
 ```
-java -jar rescheck.jar temp.db -print
+java -jar rescheck.jar -print temp.db
 ```
 
 ## request file format

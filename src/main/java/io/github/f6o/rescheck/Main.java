@@ -72,12 +72,33 @@ public class Main {
 		System.exit(0);
 	}
 	
+	private static void printDatabase(String dbFile) {
+		// TODO
+		System.err.print("TODO: print " + dbFile);
+	}
+	
+	private static void printUsage() {
+		System.err.println("usage: java -jar tool.jar <db_file> <request_file>");
+	}
+	
 	public static void main(String... args) {
 		if (args.length != 2) {
-			System.err.println("usage: java -jar tool.jar <db_file> <request_file>");
+			printUsage();
 			System.exit(1);
 		}
 		
-		request(args[0], args[1]);
+		// mode
+		if ( args[0].startsWith("-") ) {
+			String modeName = args[0].substring(1);
+			if ( modeName.equals("print") ) {
+				printDatabase(args[1]);
+			} else {
+				printUsage();
+				System.exit(1);
+			}
+		} else {
+			request(args[0], args[1]);
+		}
+		
 	}
 }

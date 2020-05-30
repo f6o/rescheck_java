@@ -2,6 +2,20 @@
 
 Assistant tool for http request testing
 
+## usage
+
+do request and save requests and response to database file (sqlite)
+
+```
+java -jar rescheck.jar temp.db request.txt
+```
+
+prints contents of database file
+
+```
+java -jar rescheck.jar temp.db -print
+```
+
 ## request file format
 
 A single request chunk is like "Request" defined in RFC2616 Section 5:

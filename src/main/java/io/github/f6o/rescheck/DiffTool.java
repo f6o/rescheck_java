@@ -17,7 +17,7 @@ public class DiffTool {
 	
 	public static JsonNode parseJson(String json) throws JsonMappingException, JsonProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
-		JsonNode n = 	mapper.readTree(json);
+		JsonNode n = mapper.readTree(json);
 		return n;
 	}
 	

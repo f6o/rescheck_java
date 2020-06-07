@@ -66,3 +66,4 @@ using GitHub Actions
 * build fat jar
 * write unit test
 * use github actions for testing
+* json-patch for diff http://jsonpatch.com/
